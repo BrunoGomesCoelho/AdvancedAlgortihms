@@ -1,11 +1,11 @@
-def main():
+import sys
 
-    lines = int(input())
+
+def main():
     count = 0
 
-    for _ in range(lines):
-        count += sum(map(int, input().split()))
-
+    for line in sys.stdin:
+        count += sum(map(int, line.split()))
     print(count)
 
 if __name__ == "__main__":
