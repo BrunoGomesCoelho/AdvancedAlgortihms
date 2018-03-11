@@ -7,8 +7,9 @@ def main():
     for line in sys.stdin:
         lst.append(int(line))
     lst.sort()
-    print(lst)
-    print(lst[::-1]) 
+    print(*lst, sep="\n")
+    print()
+    print(*lst[::-1], sep="\n") 
 
 
 if __name__ == "__main__":
