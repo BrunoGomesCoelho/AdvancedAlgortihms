@@ -34,7 +34,7 @@ def main():
         cols[y] = x
         solver(all_ans, cols, (y+1)%SIZE)
         # Printing answer
-        print("SOLN    COLUMN")
+        print("SOLN\tCOLUMN")
         print(" #\t\t1 2 3 4 5 6 7 8")
         print()
         all_ans.sort()
