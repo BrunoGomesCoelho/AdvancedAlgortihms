@@ -1,82 +1,72 @@
-from math import inf
+import math
+import copy
+
+from sys import stdin # Easy way of dealing with EOF
+
+def find_minimum_element(heap, distances):
+    element, minimum = 0, math.inf
+    for node in heap:
+        if distances[node] < minimum:
+            element = node
+            minimum = distances[node]
+    return element
 
 
-def bfs(graph, num_nodes, source, sink):
-    parents = [None]*num_nodes
-    visited = [False]*num_nodes
-    visited[source] = True
-    queue = []
-    queue.append(source)
+def dijkstra(graph, num_intersections, stations, start):
+    # Creates data stuctures
+    distances = [math.inf]*num_intersections
+    distances[start] = 0
+    waiting = [x for x in range(num_intersections)]
 
-    while queue:
-        vert = queue.pop()
-        # For each neighbour, if not visited, visit
-        for neighbour, cost in enumerate(graph[vert]):
-            if not visited[neighbour] and cost > 0:
-                queue.append(neighbour)
-                parents[neighbour] = vert
-                visited[neighbour] = True
-    return parents[sink], parents
+    # Create dummy nodes connecting all sources, with cost 0 and updating distances
+    for station in stations:
+        distances[station] = 0
+        graph[start][station] = 0
+        graph[station][start] = 0
 
+    while waiting:
+        current = find_minimum_element(waiting, distances)
+        waiting.remove(current)
+        neighbours = [x for x in range(num_intersections)
+                      if graph[current][x] != math.inf and current != x]
 
-def ford_fulkerson(graph, num_nodes, source, sink):
-    org_graph = [x[:] for x in graph]
-    max_flow = 0
-    valid_path, parents = bfs(graph, num_nodes, source, sink)
+        for neighbour in neighbours:
+            alt = distances[current] + graph[current][neighbour]
+            if alt < distances[neighbour]:
+                distances[neighbour] = alt
 
-    # While there is a extending path
-    while valid_path is not None:
-        path_flow = inf
-        current = sink
-        # Go backwards finding the augment path value
-        while current != source:
-            previous = parents[current]
-            path_flow = min(path_flow, graph[previous][current])
-            current = previous
-
-        max_flow += path_flow
-
-        # Go forwards again updating all "residual" edges
-        # In our case just update the other edge since it is bidirectional
-        current = sink
-        while current != source:
-            previous = parents[current]
-            # Substract the min path_flow from the "forwards" edge
-            graph[previous][current] -= path_flow
-
-            # Add the residual edge backwards
-            graph[current][previous] += path_flow
-            current = previous
-
-
-        # Recalculate if there is a path
-        valid_path, parents = bfs(graph, num_nodes, source, sink)
-
-    # Checks for edges that existed initally but were changed to not exiting,
-    # ie, 0 weight
-
-    for i in range(num_nodes-1):
-        for j in range(num_nodes):
-            if graph[i][j] == 0 and org_graph[i][j] > 0:
-                print(str(i+1), str(j+1))
+    return max(distances)
 
 
 def main():
-    num_nodes, num_connections = map(int, input().split())
-    first = True
-    while num_nodes and num_connections:
-        source, sink = 0, 1
-        graph = [[0]*num_nodes for _ in range(num_nodes)]
+    num_test_cases = int(input())
+    for _ in range(num_test_cases):
+        input() # read blank line
+        num_stations, num_intersections = map(int, input().split())
+        graph = [[math.inf]*num_intersections for __ in range(num_intersections)]
+        stations = []
 
-        for _ in range(num_connections):
-            node1, node2, cost = map(int, input().split())
+        for __ in range(num_stations):
+            stations.append(int(input())-1)
+
+        line = stdin.readline()
+        while line:
+            node1, node2, cost = map(int, line.split())
             graph[node1-1][node2-1] = cost
             graph[node2-1][node1-1] = cost
-        ford_fulkerson(graph, num_nodes, source, sink)
+            line = stdin.readline()
 
-        print()
+        ans = 1
+        max_dist = -1
 
-        num_nodes, num_connections = map(int, input().split())
+        for intersection in range(num_intersections-1, -1, -1):
+            if intersection not in stations:
+                temp = dijkstra(copy.deepcopy(graph), num_intersections, stations, intersection)
+                if temp > max_dist:
+                    max_dist = temp
+                    ans = intersection
+        print(ans)
+
 
 if __name__ == "__main__":
     main()
